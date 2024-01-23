@@ -306,7 +306,7 @@ scenario_plot <- function(scenario, type){
 # ui ----------------------------------------------------------------------
 
 ui <- fluidPage(
-  titlePanel(title="Simulation Results, Master's Thesis Tobias Fellinger", windowTitle = "Sim Results Msc. Tobias Fellinger"),
+  titlePanel(title="Results: A simulation-based comparison of statistical methods for time-to-event data analysis under non-proportional hazards", windowTitle = "Sim Results CONFIRMS NPH"),
   tabsetPanel(
 # Tab: Description --------------------------------------------------------
     tabPanel(
