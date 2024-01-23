@@ -13,13 +13,13 @@ library("miniPCH")
 # shiny-live served with httpuv
 # my_url <- "http://127.0.0.1:7446/"
 # shiny-live on github pages
-my_url <- "https://tobiasfellinger.github.io/ShinyDiplomarbeit/"
+my_url <- "https://simnph.github.io/SimResultsShinylive/"
 datasets <- readRDS(gzcon(url(paste0(my_url, "datasets.Rds"))))
 # shiny local
 # my_file <- "../"
 # datasets <- readRDS(paste0(my_file, "datasets.Rds"))
-exclude_from_scenario_vars <- c("recruitment time", "rate of random withdrawal", "number of patients")
-filter_scenario_values <- c("recruitment time"=0, "rate of random withdrawal"=0, "number of patients"=1000, "method"="logrank test")
+exclude_from_scenario_vars <- c("recruitment time", "proportion of censored patients", "number of patients")
+filter_scenario_values <- c("recruitment time"=18, "proportion of censored patients"=0, "number of patients"=1000, "method"="logrank test")
 scenario_table_vars <- c("median survival in the treatment arm", "median survival in the control arm", 
                          "RMST (6m) in the treatment arm", "RMST (6m) in the control arm", 
                          "geometric average hazard ratio (6m)", "average hazard ratio (6m)", 
@@ -306,7 +306,7 @@ scenario_plot <- function(scenario, type){
 # ui ----------------------------------------------------------------------
 
 ui <- fluidPage(
-  titlePanel(title="Simulation Results, Master's Thesis Tobias Fellinger", windowTitle = "Sim Results Msc. Tobias Fellinger"),
+  titlePanel(title="Results: A simulation-based comparison of statistical methods for time-to-event data analysis under non-proportional hazards", windowTitle = "Sim Results CONFIRMS NPH"),
   tabsetPanel(
 # Tab: Description --------------------------------------------------------
     tabPanel(

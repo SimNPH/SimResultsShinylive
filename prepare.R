@@ -3,24 +3,26 @@ library("tidyverse")
 
 # read data ---------------------------------------------------------------
 
-design_vars_all <- c("random_withdrawal", "n_pat_design", "recruitment")
-design_vars_delayed     <- c("delay", "hr_after_onset", "median_survival_ctrl", design_vars_all)
-design_vars_crossing    <- c("crossing", "hr_before", "hr_after", "median_survival_ctrl", design_vars_all)
-design_vars_progression <- c("hr_death_before_prog", "hr_after_prog_ctrl", "median_time_to_prog_ctrl", "hr_prog", "median_survival_before_prog", design_vars_all)
-design_vars_subgroup    <- c("hr_trt", "hr_subgroup_display", "prevalence", "median_survival_ctrl", design_vars_all)
+design_vars_all <- c("censoring_prop", "n_pat_design", "recruitment", "effect_size_ph", "hazard_ctrl")
+design_vars_delayed     <- c("delay", design_vars_all)
+design_vars_crossing    <- c("crossing", "hr_before", design_vars_all)
+design_vars_progression <- c("prog_prop_trt", "prog_prop_ctrl", "hr_before_after", design_vars_all)
+design_vars_subgroup    <- c("prevalence", "hr_subgroup_relative", design_vars_all)
 
 shhr_varnames <- c("hazard_ctrl", "prog_rate_ctrl", "hazard_after_prog", "hazard_trt", "delay", "hazard_trt_after", "hazard_trt_before", "hazard_subgroup", "prevalence", "prog_rate_trt")
 names(shhr_varnames) <- shhr_varnames
 
-data_dir <- "../Diplomarbeit/Simulations/data/"
+if(!exists("data_dir")){
+  stop("set data dir!")
+}
 
-delayed <- readRDS(paste0(data_dir, "simulation_delayed_effect_WTGP024_2023-10-24_160438/results.Rds"))
+delayed <- readRDS(paste0(data_dir, "delayed_revision.Rds"))
 
-crossing <- readRDS(paste0(data_dir, "simulation_crossing_harzards_WTGP024_2023-11-06_101033/results.Rds"))
+crossing <- readRDS(paste0(data_dir, "crossing_revision.Rds"))
 
-subgroup <- readRDS(paste0(data_dir, "simulation_subgroup_WTGP024_2023-12-05_095206/results.Rds"))
+subgroup <- readRDS(paste0(data_dir, "subgroup_revision.Rds"))
 
-progression <- readRDS(paste0(data_dir, "simulation_disease_progression_WTGP024_2023-11-16_094021/results.Rds"))
+progression <- readRDS(paste0(data_dir, "progression_revision.Rds"))
 
 
 # Metadata ----------------------------------------------------------------
@@ -114,6 +116,13 @@ rename_cols <- tibble::tribble(
   "rejection",                   "rejection rate, one sided alpha=0.025",                  
   "study_time",                  "average study time (group sequential)",                  
   "followup",                    "average max followup (group sequential)",                
+  "censoring_prop",              "proportion of censored patients",
+  "effect_size_ph",              "logrank power under PH",
+  "hazard_ctrl",                 "control arm hazard",
+  "hr_subgroup_relative",        "HR subgroup vs. treatment",
+  "prog_prop_trt",               "prop. of patients with prog., trt",
+  "prog_prop_ctrl",              "prop. of patients with prog., ctrl",
+  "hr_before_after",             "HR ctrl before prog. vs. after prog.",
 )
 
 # columns to tansform from days to months ---------------------------------
@@ -130,28 +139,6 @@ time_varnames <- c(
   )
 
 time_trafo <- SimNPH::d2m
-
-# custom transformations --------------------------------------------------
-
-progression <- progression |>
-  mutate(
-    median_survival_before_prog = SimNPH::r2m(hazard_ctrl),
-    median_time_to_prog_ctrl = SimNPH::r2m(prog_rate_ctrl)
-  )
-
-subgroup <- subgroup |>
-  mutate(
-    hr_subgroup_display = ifelse(
-      hr_subgroup > 1, 
-      paste0("1/", 1/hr_subgroup), 
-      as.character(hr_subgroup)
-      ) |>
-      factor(levels=c("0.7", "0.8", "0.9", "1/0.9", "1/0.8", "1/0.7"), ordered = TRUE)
-  )
-
-
-# calculate rejection -----------------------------------------------------
-
 
 
 # prepare data for app ----------------------------------------------------
@@ -186,7 +173,10 @@ prepare_data <- function(dataset, design_varnames){
     )
   
   # rename methods
-  stopifnot(all(dataset$method %in% method_metadata$method))
+  # stopifnot(all(dataset$method %in% method_metadata$method))
+  dataset <- dataset |> 
+    filter(method %in% method_metadata$method)
+  
   tmp_method_names <- method_metadata$method_name |>
     setNames(method_metadata$method)
   
