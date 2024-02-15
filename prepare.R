@@ -9,7 +9,7 @@ design_vars_crossing    <- c("crossing", "hr_before", design_vars_all)
 design_vars_progression <- c("prog_prop_trt", "prog_prop_ctrl", "hr_before_after", design_vars_all)
 design_vars_subgroup    <- c("prevalence", "hr_subgroup_relative", design_vars_all)
 
-shhr_varnames <- c("hazard_ctrl", "prog_rate_ctrl", "hazard_after_prog", "hazard_trt", "delay", "hazard_trt_after", "hazard_trt_before", "hazard_subgroup", "prevalence", "prog_rate_trt")
+shhr_varnames <- c("hazard_ctrl", "prog_rate_ctrl", "hazard_after_prog", "hazard_trt", "delay", "hazard_trt_after", "hazard_trt_before", "hazard_subgroup", "prevalence", "prog_rate_trt", "crossing")
 names(shhr_varnames) <- shhr_varnames
 
 if(!exists("data_dir")){
