@@ -16,13 +16,13 @@ if(!exists("data_dir")){
   stop("set data dir!")
 }
 
-delayed <- readRDS(paste0(data_dir, "delayed_revision.Rds"))
+delayed <- readRDS(paste0(data_dir, "delayed_revision2.Rds"))
 
-crossing <- readRDS(paste0(data_dir, "crossing_revision.Rds"))
+crossing <- readRDS(paste0(data_dir, "crossing_revision2.Rds"))
 
-subgroup <- readRDS(paste0(data_dir, "subgroup_revision.Rds"))
+subgroup <- readRDS(paste0(data_dir, "subgroup_revision2.Rds"))
 
-progression <- readRDS(paste0(data_dir, "progression_revision.Rds"))
+progression <- readRDS(paste0(data_dir, "progression_revision2.Rds"))
 
 
 # Metadata ----------------------------------------------------------------
@@ -34,13 +34,21 @@ method_metadata <- tibble::tribble(
   ~method,            ~direction, ~method_name,                     ~type,                        ~category,
   "ahr_6m",              "lower", "AHR 6m",                         "estimator",             "Average Hazard Ratio",
   "ahr_12m",             "lower", "AHR 12m",                        "estimator",             "Average Hazard Ratio",
+  "ahr_24m",             "lower", "AHR 24m",                        "estimator",             "Average Hazard Ratio",
+  "ahr_36m",             "lower", "AHR 36m",                        "estimator",             "Average Hazard Ratio",
   "gahr_6m",             "lower", "gAHR 6m",                        "estimator",             "Geometric Average Hazard Ratio",
   "gahr_12m",            "lower", "gAHR 12m",                       "estimator",             "Geometric Average Hazard Ratio",
+  "gahr_24m",            "lower", "gAHR 24m",                       "estimator",             "Geometric Average Hazard Ratio",
+  "gahr_36m",            "lower", "gAHR 36m",                       "estimator",             "Geometric Average Hazard Ratio",
   "median_surv",        "higher", "diff. med. surv.",               "estimator",             "Diff. Median Survival",
   "milestone_6m",       "higher", "milestone surv. ratio 6m",       "estimator",             "Ratio of Milestone Survival",
   "milestone_12m",      "higher", "milestone surv. ratio 12m",      "estimator",             "Ratio of Milestone Survival",
+  "milestone_24m",      "higher", "milestone surv. ratio 24m",      "estimator",             "Ratio of Milestone Survival",
+  "milestone_36m",      "higher", "milestone surv. ratio 36m",      "estimator",             "Ratio of Milestone Survival",
   "rmst_diff_6m",       "higher", "RMST (6m) difference",           "estimator",             "Diff. RMST",
   "rmst_diff_12m",      "higher", "RMST (12m) difference",          "estimator",             "Diff. RMST",
+  "rmst_diff_24m",      "higher", "RMST (24m) difference",          "estimator",             "Diff. RMST",
+  "rmst_diff_36m",      "higher", "RMST (36m) difference",          "estimator",             "Diff. RMST",
   "cox",                 "lower",  "Cox regression",                "estimator",             "Cox regression",
   "aft_weibull",        "higher", "AFT Weibull",                    "estimator",             "Accelerated Failure Time Model",
   "aft_lognormal",      "higher", "AFT log-normal",                 "estimator",             "Accelerated Failure Time Model",
@@ -89,14 +97,26 @@ rename_cols <- tibble::tribble(
   "rmst_ctrl_6m",                "RMST (6m) in the control arm",                           
   "gAHR_6m",                     "geometric average hazard ratio (6m)",                    
   "AHR_6m",                      "average hazard ratio (6m)",                              
+  "milestone_survival_trt_6m",   "milestone survival in the treatment arm (6m)",           
+  "milestone_survival_ctrl_6m",  "milestone survival in the control arm (6m)",             
   "rmst_trt_12m",                "RMST (12m) in the treatment arm",                        
   "rmst_ctrl_12m",               "RMST (12m) in the control arm",                          
   "gAHR_12m",                    "geometric average hazard ratio (12m)",                   
   "AHR_12m",                     "average hazard ratio (12m)",                             
-  "milestone_survival_trt_6m",   "milestone survival in the treatment arm (6m)",           
-  "milestone_survival_ctrl_6m",  "milestone survival in the control arm (6m)",             
   "milestone_survival_trt_12m",  "milestone survival in the treatment arm (12m)",          
   "milestone_survival_ctrl_12m", "milestone survival in the control arm (12m)",            
+  "rmst_trt_24m",                "RMST (24m) in the treatment arm",                        
+  "rmst_ctrl_24m",               "RMST (24m) in the control arm",                          
+  "gAHR_24m",                    "geometric average hazard ratio (24m)",                   
+  "AHR_24m",                     "average hazard ratio (24m)",                             
+  "milestone_survival_trt_24m",  "milestone survival in the treatment arm (24m)",          
+  "milestone_survival_ctrl_24m", "milestone survival in the control arm (24m)",            
+  "rmst_trt_36m",                "RMST (36m) in the treatment arm",                        
+  "rmst_ctrl_36m",               "RMST (36m) in the control arm",                          
+  "gAHR_36m",                    "geometric average hazard ratio (36m)",                   
+  "AHR_36m",                     "average hazard ratio (36m)",                             
+  "milestone_survival_trt_36m",  "milestone survival in the treatment arm (36m)",          
+  "milestone_survival_ctrl_36m", "milestone survival in the control arm (36m)",            
   "descriptive.n_pat",           "average number of patients",                             
   "descriptive.evt",             "average number of events",                               
   "descriptive.evt_ctrl",        "average number of events in the control arm",            
@@ -132,8 +152,12 @@ methods_scale <- c("diff_med_weibull", "median_surv", "rmst_diff_12m", "rmst_dif
 
 time_varnames <- c(
   "delay", "crossing", "recruitment", "median_survival_trt", 
-  "median_survival_ctrl", "rmst_trt_6m", "rmst_ctrl_6m", "rmst_trt_12m", 
-  "rmst_ctrl_12m", "descriptive.max_followup", "descriptive.study_time", 
+  "median_survival_ctrl",
+  "rmst_trt_6m", "rmst_ctrl_6m", 
+  "rmst_trt_12m", "rmst_ctrl_12m", 
+  "rmst_trt_24m", "rmst_ctrl_24m", 
+  "rmst_trt_36m", "rmst_ctrl_36m", 
+  "descriptive.max_followup", "descriptive.study_time", 
   "descriptive.sd_max_followup", "descriptive.sd_study_time", 
   as.character(outer(methods_scale, stats_scale, \(x,y){str_c(x, ".", y)}))
   )
