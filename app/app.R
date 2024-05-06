@@ -20,13 +20,33 @@ datasets <- readRDS(gzcon(url(paste0(my_url, "datasets.Rds"))))
 # datasets <- readRDS(paste0(my_file, "datasets.Rds"))
 exclude_from_scenario_vars <- c("recruitment time", "proportion of censored patients", "number of patients")
 filter_scenario_values <- c("recruitment time"=18, "proportion of censored patients"=0, "number of patients"=1000, "method"="logrank test")
-scenario_table_vars <- c("median survival in the treatment arm", "median survival in the control arm", 
-                         "RMST (6m) in the treatment arm", "RMST (6m) in the control arm", 
-                         "geometric average hazard ratio (6m)", "average hazard ratio (6m)", 
-                         "RMST (12m) in the treatment arm", "RMST (12m) in the control arm", 
-                         "geometric average hazard ratio (12m)", "average hazard ratio (12m)", 
-                         "milestone survival in the treatment arm (6m)", "milestone survival in the control arm (6m)", 
-                         "milestone survival in the treatment arm (12m)", "milestone survival in the control arm (12m)"
+scenario_table_vars <- c(
+  "median survival in the treatment arm",
+  "median survival in the control arm", 
+  "RMST (6m) in the treatment arm",
+  "RMST (6m) in the control arm",
+  "RMST (12m) in the treatment arm",
+  "RMST (12m) in the control arm",
+  "RMST (24m) in the treatment arm",
+  "RMST (24m) in the control arm",
+  "RMST (36m) in the treatment arm",
+  "RMST (36m) in the control arm",
+  "geometric average hazard ratio (6m)",
+  "geometric average hazard ratio (12m)",
+  "geometric average hazard ratio (24m)",
+  "geometric average hazard ratio (36m)",
+  "average hazard ratio (6m)",
+  "average hazard ratio (12m)",
+  "average hazard ratio (24m)",
+  "average hazard ratio (36m)",
+  "milestone survival in the treatment arm (6m)",
+  "milestone survival in the control arm (6m)",
+  "milestone survival in the treatment arm (12m)",
+  "milestone survival in the control arm (12m)",
+  "milestone survival in the treatment arm (24m)",
+  "milestone survival in the control arm (24m)",
+  "milestone survival in the treatment arm (36m)",
+  "milestone survival in the control arm (36m)"
 )
 
 # call package functions once to load packages ----------------------------
