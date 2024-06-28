@@ -6,6 +6,7 @@ library("sortable")
 library("ggplot2")
 library("patchwork")
 library("miniPCH")
+library("SimNPH")
 
 # data --------------------------------------------------------------------
 
@@ -407,6 +408,37 @@ ui <- fluidPage(
         )
       ),
       style="margin-top:1rem;"
+    ),
+# Tab: Simulate Datasets --------------------------------------------------
+    tabPanel(
+      "Simulate Datasets",
+      sidebarLayout(
+        sidebarPanel(
+          selectInput(
+            inputId = "simulate_scenarioclass",
+            label = "Scenario",
+            choices = names(datasets)
+          ),
+          uiOutput(
+            outputId = "simulate_scenariofilter_ui"
+          )
+        ),
+        mainPanel(
+          actionButton(
+            inputId = "simulate_run",
+            label = "redraw",
+            icon = icon("redo")
+          ),
+          plotOutput(
+            "simulate_plot",
+            width="100%",
+            height="600px"
+          ),
+          tableOutput(
+            "simulate_table"
+          )
+        )
+      )
     )
   )
 )
@@ -575,7 +607,7 @@ server <- function(input, output) {
       )
     })
   })
-
+  
 # Tab Scenarios: Plot -----------------------------------------------------
   
   output$scenario_plot <- renderPlot({
@@ -597,7 +629,80 @@ server <- function(input, output) {
     )
   }) 
   
+# Tab Simulate Datasets: reactive values ----------------------------------
   
+  simulate_filter_vars <- reactive({
+    res <- datasets[[input$simulate_scenarioclass]]$filter_values
+    res
+  })
+  
+  simulate_scenario_data <- reactive({
+    tmp_data <- datasets[[input$simulate_scenarioclass]]$data
+    tmp_filter <- names(scenario_filter_vars())
+    
+    tmp_filter_values <- sapply(
+      tmp_filter,
+      \(i){input[[paste0("simulate_filter_", i)]]}
+    )
+    names(tmp_filter_values) <- tmp_filter
+    
+    tmp_filter_values <- c(tmp_filter_values, filter_scenario_values)
+    for(i in names(tmp_filter_values)){
+      tmp_data <- tmp_data[tmp_data[, i] == tmp_filter_values[i], ]
+    }
+    
+    tmp_data
+  })|> 
+    bindEvent(input$simulate_run)
+  
+# Tab Simulate Datasets: renderUI -----------------------------------------
+
+  output$simulate_scenariofilter_ui <- renderUI({
+    lapply(names(simulate_filter_vars()), \(var){
+      selectInput(
+        inputId = paste0("simulate_filter_", var),
+        label = var,
+        choices = simulate_filter_vars()[[var]]
+      )
+    })
+  })
+
+# Tab Simulate Datasets: plot ---------------------------------------------
+
+output$simulate_plot <- renderPlot({
+  my_generator <- function(condition, fixed_objects=NULL){
+    generate_delayed_effect(condition, fixed_objects) |>
+      recruitment_uniform(condition$recruitment) |>
+      random_censoring_exp(condition$random_withdrawal) |>
+      admin_censoring_events(condition$final_events)
+  }
+  
+  cols <- c(
+    "hazard_trt" = "hazard_trt",
+    "hazard_ctrl" = "hazard_ctrl",
+    "delay" = "delay of onset of treatment effect",
+    "random_withdrawal" = "rate of random withdrawal",
+    "n_pat" = "number of patients",
+    "recruitment" = "recruitment time"
+  )
+  
+  scenario_condition <- simulate_scenario_data()[, cols] |> 
+    setNames(names(cols)) |>
+    transform(
+      n_trt = n_pat/2,
+      n_ctrl = n_pat/2,
+      recruitment = m2d(recruitment),
+      final_events = n_pat * 0.75
+    )
+  
+    par(mfrow=c(3,3))
+    lapply(1:9, \(i){my_generator(scenario_condition)}) |>
+      lapply(\(dat){
+        plot(survival::survfit(Surv(t, evt)~trt, dat), col=c(2,3))
+      })
+  
+  
+})
   
 } # end server
 
