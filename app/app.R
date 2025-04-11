@@ -10,7 +10,7 @@ library("miniPCH")
 # data --------------------------------------------------------------------
 
 # adjust depending on where this is hosted:
-# shiny-live served with httpuv
+# shiny-live served with httpuv::runStaticServer("docs/")
 # my_url <- "http://127.0.0.1:7446/"
 # shiny-live on github pages
 my_url <- "https://simnph.github.io/SimResultsShinylive/"

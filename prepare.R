@@ -1,5 +1,6 @@
 library("SimNPH")
 library("tidyverse")
+library("stringr")
 
 # read data ---------------------------------------------------------------
 
